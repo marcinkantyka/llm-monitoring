@@ -1,0 +1,123 @@
+{
+  "uid": "llm-monitoring",
+  "title": "LLM Monitoring Overview",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["llm", "otel", "openlit"],
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Spans Accepted / sec",
+      "id": 1,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_receiver_accepted_spans[5m])",
+          "legendFormat": "accepted",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0}
+    },
+    {
+      "type": "stat",
+      "title": "Logs Accepted / sec",
+      "id": 2,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_receiver_accepted_logs[5m])",
+          "legendFormat": "accepted",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0}
+    },
+    {
+      "type": "stat",
+      "title": "Metrics Accepted / sec",
+      "id": 3,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_receiver_accepted_metric_points[5m])",
+          "legendFormat": "accepted",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0}
+    },
+    {
+      "type": "stat",
+      "title": "Receiver Refused / sec",
+      "id": 4,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_receiver_refused_spans[5m]) + rate(otelcol_receiver_refused_logs[5m]) + rate(otelcol_receiver_refused_metric_points[5m])",
+          "legendFormat": "refused",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Collector Accepted Spans by Receiver",
+      "id": 5,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_receiver_accepted_spans[5m])",
+          "legendFormat": "{{receiver}}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5}
+    },
+    {
+      "type": "timeseries",
+      "title": "Collector Exported Spans by Exporter",
+      "id": 6,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_exporter_sent_spans[5m])",
+          "legendFormat": "{{exporter}}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5}
+    },
+    {
+      "type": "timeseries",
+      "title": "Collector Exported Logs by Exporter",
+      "id": 7,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_exporter_sent_logs[5m])",
+          "legendFormat": "{{exporter}}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13}
+    },
+    {
+      "type": "timeseries",
+      "title": "Collector Exported Metrics by Exporter",
+      "id": 8,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(otelcol_exporter_sent_metric_points[5m])",
+          "legendFormat": "{{exporter}}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13}
+    }
+  ]
+}

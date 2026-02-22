@@ -183,6 +183,9 @@ Explore:
 - Logs: use Loki and filter by labels like `service.name`.
 - Metrics: use Prometheus; search for `otelcol_` metrics to verify ingestion.
 
+Dashboard:
+- A pre-provisioned dashboard called **LLM Monitoring Overview** is available under the **LLM Monitoring** folder.
+
 ## Configuration Reference
 Common variables:
 - `PROVIDER`: `lmstudio` or `ollama`
