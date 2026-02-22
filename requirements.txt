@@ -1,0 +1,4 @@
+openlit
+openai>=1.13.0
+boto3
+opentelemetry-proto

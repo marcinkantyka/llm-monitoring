@@ -1,0 +1,132 @@
+version: "3.8"
+services:
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES=s3
+      - AWS_DEFAULT_REGION=us-east-1
+    ports:
+      - "4566:4566"
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otelcol/collector.yaml"]
+    volumes:
+      - ./otel/collector.yaml:/etc/otelcol/collector.yaml:ro
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
+    depends_on:
+      - localstack
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+    depends_on:
+      - otel-collector
+  loki:
+    image: grafana/loki:latest
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes:
+      - ./observability/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    depends_on:
+      - otel-collector
+  prometheus:
+    image: prom/prometheus:latest
+    command: ["--config.file=/etc/prometheus/prometheus.yaml"]
+    volumes:
+      - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+  app-lmstudio:
+    build: .
+    profiles: ["lmstudio"]
+    environment:
+      - PROVIDER=lmstudio
+      - LMSTUDIO_BASE_URL=http://host.docker.internal:1234/v1
+      - LMSTUDIO_MODEL=${LMSTUDIO_MODEL}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_SERVICE_NAME=llm-monitoring-lmstudio
+    depends_on:
+      - otel-collector
+  app-ollama:
+    build: .
+    profiles: ["ollama"]
+    environment:
+      - PROVIDER=ollama
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_SERVICE_NAME=llm-monitoring-ollama
+    depends_on:
+      - otel-collector
+  load-test-lmstudio:
+    build: .
+    profiles: ["loadtest-lmstudio"]
+    command: ["python", "/app/load_test.py"]
+    environment:
+      - PROVIDER=lmstudio
+      - LMSTUDIO_BASE_URL=${LMSTUDIO_BASE_URL:-http://host.docker.internal:1234/v1}
+      - LMSTUDIO_MODEL=${LMSTUDIO_MODEL}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_SERVICE_NAME=llm-monitoring-loadtest-lmstudio
+      - LOADTEST_REQUESTS=${LOADTEST_REQUESTS}
+      - LOADTEST_CONCURRENCY=${LOADTEST_CONCURRENCY}
+      - LOADTEST_DELAY=${LOADTEST_DELAY}
+      - LOADTEST_PROMPT=${LOADTEST_PROMPT}
+      - LOADTEST_SYSTEM=${LOADTEST_SYSTEM}
+      - LOADTEST_TEMPERATURE=${LOADTEST_TEMPERATURE}
+      - LOADTEST_MAX_TOKENS=${LOADTEST_MAX_TOKENS}
+    depends_on:
+      - otel-collector
+  load-test-ollama:
+    build: .
+    profiles: ["loadtest-ollama"]
+    command: ["python", "/app/load_test.py"]
+    environment:
+      - PROVIDER=ollama
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434/v1}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_SERVICE_NAME=llm-monitoring-loadtest-ollama
+      - LOADTEST_REQUESTS=${LOADTEST_REQUESTS}
+      - LOADTEST_CONCURRENCY=${LOADTEST_CONCURRENCY}
+      - LOADTEST_DELAY=${LOADTEST_DELAY}
+      - LOADTEST_PROMPT=${LOADTEST_PROMPT}
+      - LOADTEST_SYSTEM=${LOADTEST_SYSTEM}
+      - LOADTEST_TEMPERATURE=${LOADTEST_TEMPERATURE}
+      - LOADTEST_MAX_TOKENS=${LOADTEST_MAX_TOKENS}
+    depends_on:
+      - otel-collector
+
+volumes:
+  grafana-data:
+  loki-data:
+  tempo-data:
