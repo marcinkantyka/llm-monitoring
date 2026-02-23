@@ -1,10 +1,11 @@
-version: "3.8"
 services:
   localstack:
     image: localstack/localstack:latest
     environment:
       - SERVICES=s3
       - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - ./observability/localstack/init:/etc/localstack/init/ready.d:ro
     ports:
       - "4566:4566"
   otel-collector:
@@ -19,7 +20,7 @@ services:
     ports:
       - "4317:4317"
       - "4318:4318"
-      - "8889:8889"
+      - "8888:8888"
     depends_on:
       - localstack
   tempo:
@@ -59,7 +60,6 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./observability/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
-      - ./observability/grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
       - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
     ports:
       - "3000:3000"
@@ -73,7 +73,7 @@ services:
     environment:
       - PROVIDER=lmstudio
       - LMSTUDIO_BASE_URL=http://host.docker.internal:1234/v1
-      - LMSTUDIO_MODEL=${LMSTUDIO_MODEL}
+      - LMSTUDIO_MODEL=${LMSTUDIO_MODEL:-}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_SERVICE_NAME=llm-monitoring-lmstudio
     depends_on:
@@ -84,7 +84,7 @@ services:
     environment:
       - PROVIDER=ollama
       - OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
-      - OLLAMA_MODEL=${OLLAMA_MODEL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_SERVICE_NAME=llm-monitoring-ollama
     depends_on:
@@ -96,16 +96,16 @@ services:
     environment:
       - PROVIDER=lmstudio
       - LMSTUDIO_BASE_URL=${LMSTUDIO_BASE_URL:-http://host.docker.internal:1234/v1}
-      - LMSTUDIO_MODEL=${LMSTUDIO_MODEL}
+      - LMSTUDIO_MODEL=${LMSTUDIO_MODEL:-}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_SERVICE_NAME=llm-monitoring-loadtest-lmstudio
-      - LOADTEST_REQUESTS=${LOADTEST_REQUESTS}
-      - LOADTEST_CONCURRENCY=${LOADTEST_CONCURRENCY}
-      - LOADTEST_DELAY=${LOADTEST_DELAY}
-      - LOADTEST_PROMPT=${LOADTEST_PROMPT}
-      - LOADTEST_SYSTEM=${LOADTEST_SYSTEM}
-      - LOADTEST_TEMPERATURE=${LOADTEST_TEMPERATURE}
-      - LOADTEST_MAX_TOKENS=${LOADTEST_MAX_TOKENS}
+      - LOADTEST_REQUESTS=${LOADTEST_REQUESTS:-20}
+      - LOADTEST_CONCURRENCY=${LOADTEST_CONCURRENCY:-5}
+      - LOADTEST_DELAY=${LOADTEST_DELAY:-0}
+      - LOADTEST_PROMPT=${LOADTEST_PROMPT:-}
+      - LOADTEST_SYSTEM=${LOADTEST_SYSTEM:-}
+      - LOADTEST_TEMPERATURE=${LOADTEST_TEMPERATURE:-0.2}
+      - LOADTEST_MAX_TOKENS=${LOADTEST_MAX_TOKENS:-128}
     depends_on:
       - otel-collector
   load-test-ollama:
@@ -115,16 +115,16 @@ services:
     environment:
       - PROVIDER=ollama
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434/v1}
-      - OLLAMA_MODEL=${OLLAMA_MODEL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_SERVICE_NAME=llm-monitoring-loadtest-ollama
-      - LOADTEST_REQUESTS=${LOADTEST_REQUESTS}
-      - LOADTEST_CONCURRENCY=${LOADTEST_CONCURRENCY}
-      - LOADTEST_DELAY=${LOADTEST_DELAY}
-      - LOADTEST_PROMPT=${LOADTEST_PROMPT}
-      - LOADTEST_SYSTEM=${LOADTEST_SYSTEM}
-      - LOADTEST_TEMPERATURE=${LOADTEST_TEMPERATURE}
-      - LOADTEST_MAX_TOKENS=${LOADTEST_MAX_TOKENS}
+      - LOADTEST_REQUESTS=${LOADTEST_REQUESTS:-20}
+      - LOADTEST_CONCURRENCY=${LOADTEST_CONCURRENCY:-5}
+      - LOADTEST_DELAY=${LOADTEST_DELAY:-0}
+      - LOADTEST_PROMPT=${LOADTEST_PROMPT:-}
+      - LOADTEST_SYSTEM=${LOADTEST_SYSTEM:-}
+      - LOADTEST_TEMPERATURE=${LOADTEST_TEMPERATURE:-0.2}
+      - LOADTEST_MAX_TOKENS=${LOADTEST_MAX_TOKENS:-128}
     depends_on:
       - otel-collector
 

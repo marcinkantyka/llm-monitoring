@@ -15,32 +15,39 @@ exporters:
       region: "us-east-1"
       s3_bucket: "llm-telemetry"
       s3_prefix: "otel"
-      s3_partition: "minute"
-      s3_partition_format: "%Y/%m/%d/%H/%M"
       endpoint: "http://localstack:4566"
       s3_force_path_style: true
       disable_ssl: true
       compression: "gzip"
-  otlp/tempo:
+    sending_queue:
+      enabled: true
+      queue_size: 1024
+  otlp_grpc/tempo:
     endpoint: "tempo:4317"
     tls:
       insecure: true
-  otlphttp/loki:
+  otlp_http/loki:
     endpoint: "http://loki:3100/otlp"
-  prometheus:
-    endpoint: "0.0.0.0:8889"
 
 service:
+  telemetry:
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: "0.0.0.0"
+                port: 8888
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [awss3, otlp/tempo]
+      exporters: [awss3, otlp_grpc/tempo]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [awss3, prometheus]
+      exporters: [awss3]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [awss3, otlphttp/loki]
+      exporters: [awss3, otlp_http/loki]

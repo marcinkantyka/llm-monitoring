@@ -91,25 +91,30 @@ def latest_object(bucket: str, prefix: str) -> Optional[dict]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Inspect LocalStack S3 for OpenTelemetry data.")
-    parser.add_argument("--bucket", default="llm-telemetry", help="S3 bucket name.")
-    parser.add_argument("--prefix", default="otel", help="Key prefix.")
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--bucket", default="llm-telemetry", help="S3 bucket name.")
+    common.add_argument("--prefix", default="otel", help="Key prefix.")
+
+    parser = argparse.ArgumentParser(
+        description="Inspect LocalStack S3 for OpenTelemetry data.",
+        parents=[common],
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("buckets", help="List buckets")
+    sub.add_parser("buckets", help="List buckets", parents=[common])
 
-    list_parser = sub.add_parser("list", help="List objects")
+    list_parser = sub.add_parser("list", help="List objects", parents=[common])
     list_parser.add_argument("--limit", type=int, default=50, help="Max objects to print (0 = no limit).")
 
-    head_parser = sub.add_parser("head", help="Head object")
+    head_parser = sub.add_parser("head", help="Head object", parents=[common])
     head_parser.add_argument("key", help="Object key")
 
-    download_parser = sub.add_parser("download", help="Download object")
+    download_parser = sub.add_parser("download", help="Download object", parents=[common])
     download_parser.add_argument("key", help="Object key")
     download_parser.add_argument("--out", required=True, help="Output path")
     download_parser.add_argument("--gunzip", action="store_true", help="Decompress gzip before writing")
 
-    latest_parser = sub.add_parser("latest", help="Find latest object")
+    latest_parser = sub.add_parser("latest", help="Find latest object", parents=[common])
     latest_parser.add_argument("--out", help="Output path to save the latest object")
     latest_parser.add_argument("--gunzip", action="store_true", help="Decompress gzip before writing")
 
