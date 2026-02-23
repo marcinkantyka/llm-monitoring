@@ -3,7 +3,7 @@
   "title": "LLM Monitoring Overview",
   "timezone": "browser",
   "schemaVersion": 38,
-  "version": 1,
+  "version": 2,
   "refresh": "10s",
   "tags": ["llm", "otel", "openlit"],
   "panels": [
@@ -14,7 +14,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_receiver_accepted_spans[5m])",
+          "expr": "rate(otelcol_receiver_accepted_spans_total[5m])",
           "legendFormat": "accepted",
           "refId": "A"
         }
@@ -28,7 +28,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_receiver_accepted_logs[5m])",
+          "expr": "rate(otelcol_receiver_accepted_logs_total[5m])",
           "legendFormat": "accepted",
           "refId": "A"
         }
@@ -42,7 +42,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_receiver_accepted_metric_points[5m])",
+          "expr": "rate(otelcol_receiver_accepted_metric_points_total[5m])",
           "legendFormat": "accepted",
           "refId": "A"
         }
@@ -56,7 +56,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_receiver_refused_spans[5m]) + rate(otelcol_receiver_refused_logs[5m]) + rate(otelcol_receiver_refused_metric_points[5m])",
+          "expr": "rate(otelcol_receiver_refused_spans_total[5m]) + rate(otelcol_receiver_refused_logs_total[5m]) + rate(otelcol_receiver_refused_metric_points_total[5m])",
           "legendFormat": "refused",
           "refId": "A"
         }
@@ -70,7 +70,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_receiver_accepted_spans[5m])",
+          "expr": "rate(otelcol_receiver_accepted_spans_total[5m])",
           "legendFormat": "{{receiver}}",
           "refId": "A"
         }
@@ -84,7 +84,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_exporter_sent_spans[5m])",
+          "expr": "rate(otelcol_exporter_sent_spans_total[5m])",
           "legendFormat": "{{exporter}}",
           "refId": "A"
         }
@@ -98,7 +98,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_exporter_sent_logs[5m])",
+          "expr": "rate(otelcol_exporter_sent_logs_total[5m])",
           "legendFormat": "{{exporter}}",
           "refId": "A"
         }
@@ -112,7 +112,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(otelcol_exporter_sent_metric_points[5m])",
+          "expr": "rate(otelcol_exporter_sent_metric_points_total[5m])",
           "legendFormat": "{{exporter}}",
           "refId": "A"
         }
